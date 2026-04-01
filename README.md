@@ -1,4 +1,4 @@
-# Sander Mod
+# Sander
 
 <div align="center">
 
