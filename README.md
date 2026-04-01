@@ -11,6 +11,10 @@ A client-side modification for **Space Station 14** providing enhanced gameplay 
 
 </div>
 
+# WARNING!
+
+For some people, the MOD menu covers the game interface, so make the interface slightly less than 100%!
+
 ## Features
 
 ### 🔱 Compass Navigation
