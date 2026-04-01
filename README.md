@@ -101,7 +101,7 @@ Display implant information on entities within range:
 ## Usage
 
 ### Opening the Menu
-- Press `F1` or use the verb menu to access mod controls
+- Use the verb menu to access mod controls
 
 ### Feature Toggles
 All features can be enabled/disabled through the in-game UI:
