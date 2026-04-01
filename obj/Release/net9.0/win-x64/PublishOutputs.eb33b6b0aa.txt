@@ -1,0 +1,9 @@
+/home/melvinsgjr/sander/Sander/bin/publish/windows/Sander.dll
+/home/melvinsgjr/sander/Sander/bin/publish/windows/Sander.deps.json
+/home/melvinsgjr/sander/Sander/bin/publish/windows/Sander.pdb
+/home/melvinsgjr/sander/Sander/bin/publish/windows/0Harmony.dll
+/home/melvinsgjr/sander/Sander/bin/publish/windows/Content.Client.dll
+/home/melvinsgjr/sander/Sander/bin/publish/windows/Content.Shared.dll
+/home/melvinsgjr/sander/Sander/bin/publish/windows/Robust.Client.dll
+/home/melvinsgjr/sander/Sander/bin/publish/windows/Robust.Shared.dll
+/home/melvinsgjr/sander/Sander/bin/publish/windows/Robust.Shared.Maths.dll

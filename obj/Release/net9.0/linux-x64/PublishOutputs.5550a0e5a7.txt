@@ -1,0 +1,9 @@
+/home/melvinsgjr/sander/Sander/bin/publish/linux/Sander.dll
+/home/melvinsgjr/sander/Sander/bin/publish/linux/Sander.deps.json
+/home/melvinsgjr/sander/Sander/bin/publish/linux/Sander.pdb
+/home/melvinsgjr/sander/Sander/bin/publish/linux/0Harmony.dll
+/home/melvinsgjr/sander/Sander/bin/publish/linux/Content.Client.dll
+/home/melvinsgjr/sander/Sander/bin/publish/linux/Content.Shared.dll
+/home/melvinsgjr/sander/Sander/bin/publish/linux/Robust.Client.dll
+/home/melvinsgjr/sander/Sander/bin/publish/linux/Robust.Shared.dll
+/home/melvinsgjr/sander/Sander/bin/publish/linux/Robust.Shared.Maths.dll
