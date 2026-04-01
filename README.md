@@ -6,6 +6,9 @@ Sander Mod for [Space Station 14](https://github.com/space-wizards/space-station
 
 A client-side modification for **Space Station 14** providing enhanced gameplay features including visual overlays, compass navigation, sound subtitles for accessibility, footsteps tracking, and aimbot assistance.
 
+<img width="941" height="138" alt="image" src="https://github.com/user-attachments/assets/04b4b643-2c08-4b9f-8d6b-abfb420295e2" />
+
+
 </div>
 
 ## Features
