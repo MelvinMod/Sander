@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Sander Mod for Space Station 14](https://via.placeholder.com/880x300/1a1a2e/e94560?text=Sander+Mod)
+Sander Mod for [Space Station 14](https://github.com/space-wizards/space-station-14)
 
 A client-side modification for **Space Station 14** providing enhanced gameplay features including visual overlays, compass navigation, sound subtitles for accessibility, footsteps tracking, and aimbot assistance.
 
