@@ -15,6 +15,8 @@ A client-side modification for **Space Station 14** providing enhanced gameplay 
 
 For some people, the MOD menu covers the game interface, so make the interface slightly less than 100%!
 
+Also if `Sander.dll` is not working for you, try a fallback version!!!
+
 ## Features
 
 ### 🔱 Compass Navigation
