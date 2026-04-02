@@ -15,7 +15,9 @@ A client-side modification for **Space Station 14** providing enhanced gameplay 
 
 For some people, the MOD menu covers the game interface, so make the interface slightly less than 100%!
 
-Also if `Sander.dll` is not working for you, try a fallback version!!!
+Also if `Sander.dll` is not working for you, try a fallback version!!! 
+
+Also, if you see in [releases](https://github.com/MelvinMod/Sander/releases) something like "1.2**b**", it means that this is a beta version (often not marked as the latest release)!!!
 
 ## Features
 
