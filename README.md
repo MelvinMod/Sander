@@ -88,13 +88,9 @@ Display implant information on entities within range:
 
 ### Steps
 
-1. Download the appropriate `Sander.dll` for your platform:
-   - **Linux**: `Sander.dll` from `bin/publish/linux/`
-   - **Windows**: `Sander.dll` from `bin/publish/windows/`
+1. Place the DLL in your mod loader's mod folder
 
-2. Place the DLL in your mod loader's mod folder
-
-3. Launch the game - the mod loads automatically
+2. Launch the game - the mod loads automatically
 
 ## Usage
 
@@ -112,29 +108,6 @@ All features can be enabled/disabled through the in-game UI:
 - `!coords <x> <y> <z>` - Set target coordinates
 - Right-click entities - Toggle implant visibility
 
-## Architecture
-
-```
-Sander/
-├── Overlays/          # Visual overlay systems
-│   ├── SanderCompassControl.cs     # Compass rendering
-│   ├── SanderImplantOverlay.cs     # Implant display
-│   ├── SanderSyndicatePirateOverlay.cs
-│   ├── SanderSoundSubtitleOverlay.cs
-│   ├── SanderFootstepsOverlay.cs
-│   └── SanderAimbotOverlay.cs
-├── UI/               # User interface
-│   ├── SanderSearchBar.cs
-│   ├── SanderCompassWindow.cs
-│   └── SanderCompassControl.cs
-├── Systems/          # Game systems
-│   ├── SanderCameraSystem.cs
-│   └── SanderOverlayRegistrationSystem.cs
-├── Patches/          # Harmony patches
-├── Commands/         # Chat commands
-├── Resources/        # Dependencies
-└── SanderSearchState.cs  # Global state
-```
 
 ## Technical Details
 
