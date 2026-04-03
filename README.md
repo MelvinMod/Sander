@@ -22,17 +22,7 @@ Also, if you see in [releases](https://github.com/MelvinMod/Sander/releases) som
 ## Features
 
 ### 🔱 Compass Navigation
-Real-time compass showing nearby entities with color-coded markers:
-
-| Marker Type | Color | Description |
-|-------------|-------|-------------|
-| Self | 🔵 Dark Blue | Your position (center dot) |
-| Player | 🟢 Green | Other crew members |
-| NPC | 🟠 Orange | Non-player characters |
-| Item | 🟡 Yellow (Triangle) | Searched items |
-| Coordinate | 🟢 Green (Dot) | Target coordinates |
-| Syndicate | 🔴 Red | Antagonists (when enabled) |
-| Pirate | 🔵 Cyan | Pirates (when enabled) |
+Real-time compass showing everything with color-coded markers!
 
 ### 💡 Visual Overlays
 
