@@ -60,8 +60,8 @@ Automated targeting assistance for combat:
 
 | Type | Color | Trigger |
 |------|-------|---------|
-| GunBot | 🔴 Red | Ranged weapons |
-| MeleeBot | 🟠 Orange | Melee weapons |
+| GunBot | White | Ranged weapons |
+| MeleeBot | Orange | Melee weapons |
 
 > [!NOTE]
 > Requires being in combat mode (triggered by left-click) to activate.
