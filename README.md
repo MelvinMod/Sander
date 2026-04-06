@@ -14,7 +14,7 @@ Join my **[Matrix chat](https://matrix.to/#/#The-Robuster's-Workshop:matrix.org)
 🇬🇧 English / 🇷🇺 Русский — both welcome.  
 🇷🇴 Romanian & 🇪🇸 Spanish speakers also feel at home.
 
-Let's build, inject, and break things together.
+Let's build, inject, and modify Space Station 14 together.
 
 </div>
 
