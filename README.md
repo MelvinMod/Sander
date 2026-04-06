@@ -71,7 +71,7 @@ Automated targeting assistance for combat:
 | MeleeBot | Orange | Melee weapons |
 
 > [!NOTE]
-> Requires being in combat mode (triggered by left-click) to activate.
+> Requires being in combat mode to activate.
 
 ### 🧬 Implant Detection
 
