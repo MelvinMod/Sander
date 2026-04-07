@@ -9,7 +9,7 @@ A client-side modification for **Space Station 14** providing enhanced gameplay 
 <img width="941" height="138" alt="image" src="https://github.com/user-attachments/assets/04b4b643-2c08-4b9f-8d6b-abfb420295e2" />
 
 ### Community
-Join my **[Matrix chat](https://matrix.to/#/#The-Robuster's-Workshop:matrix.org)** if you're looking for a community dedicated to **modding for Space Station 14**.
+Join my **[Matrix chat](https://matrix.to/#/#The-Robuster's-Workshop:matrix.org)** and/or **[Telegram chat](https://t.me/+sBRp7Yyzvx5hZWNi)** if you're looking for a community dedicated to **modding for Space Station 14**.
 
 🇬🇧 English / 🇷🇺 Русский — both welcome.  
 🇷🇴 Romanian & 🇪🇸 Spanish speakers also feel at home.
