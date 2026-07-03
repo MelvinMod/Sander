@@ -35,29 +35,24 @@ public sealed class SanderCompassControl : Control
 
     private readonly Font _font;
 
-    // Cache for performance - only update every few frames
-    private readonly List<(EntityUid Entity, Vector2 ScreenPos, Color Color, string Name, CompassMarkerType MarkerType)> _cachedEntities = new();
+    private readonly List<(EntityUid Entity, Vector2 Offset, float Distance, Color Color, string Name, CompassMarkerType MarkerType)> _cachedEntities = new();
     private int _frameCounter = 0;
-    private const int CacheInterval = 25; // Update every 25 frames - significantly reduces lag
+    private const int CacheInterval = 15;
 
-    // Last known player position
     private Vector2 _lastPlayerPos = Vector2.Zero;
     private bool _needsFullUpdate = true;
 
-    // Detection range for compass
-    private const float CompassRange = 25f;
+    private const float CompassRange = 40f; // Increased from 25f for wider FOV
 
-    // Track last map
     private MapId _lastMapId = MapId.Nullspace;
 
-    // Colors
-    private static readonly Color SelfColor = new(0.1f, 0.1f, 0.6f, 1f);      // Dark blue
-    private static readonly Color PlayerColor = new(0.2f, 0.8f, 0.2f, 1f);    // Green
-    private static readonly Color NpcColor = new(1f, 0.5f, 0f, 1f);           // Orange
-    private static readonly Color ItemColor = new(1f, 0.84f, 0.1f, 1f);       // Yellow
-    private static readonly Color CoordinateColor = new(0.2f, 1f, 0.2f, 1f);  // Green
-    private static readonly Color SyndicateColor = new(1f, 0.2f, 0.2f, 1f);   // Red
-    private static readonly Color PirateColor = new(0.2f, 0.8f, 1f, 1f);      // Cyan
+    private static readonly Color SelfColor = new(0.1f, 0.1f, 0.6f, 1f);
+    private static readonly Color PlayerColor = new(0.2f, 0.8f, 0.2f, 1f);
+    private static readonly Color NpcColor = new(1f, 0.5f, 0f, 1f);
+    private static readonly Color ItemColor = new(1f, 0.84f, 0.1f, 1f);
+    private static readonly Color CoordinateColor = new(0.2f, 1f, 0.2f, 1f);
+    private static readonly Color SyndicateColor = new(1f, 0.2f, 0.2f, 1f);
+    private static readonly Color PirateColor = new(0.2f, 0.8f, 1f, 1f);
 
     public SanderCompassControl()
     {
@@ -74,56 +69,59 @@ public sealed class SanderCompassControl : Control
         var center = new Vector2(size.X / 2f, size.Y / 2f);
         var radius = MathF.Min(size.X, size.Y) / 2f - 8f;
 
-        // Background + ring
-        handle.DrawCircle(center, radius + 1f, new Color(0.05f, 0.06f, 0.08f, 0.85f));
-        handle.DrawCircle(center, radius, new Color(0f, 0f, 0f, 0.90f));
+        // Better looking compass background with gradient effect
+        handle.DrawCircle(center, radius + 2f, new Color(0.03f, 0.04f, 0.06f, 0.90f));
+        handle.DrawCircle(center, radius, new Color(0.05f, 0.06f, 0.09f, 0.95f));
+        handle.DrawCircle(center, radius - 1f, new Color(0.10f, 0.12f, 0.16f, 1f), filled: false);
+        
+        // Draw outer ring
         handle.DrawCircle(center, radius, new Color(0.25f, 0.30f, 0.38f, 0.95f), filled: false);
 
-        // Crosshair
-        var grid = new Color(0.20f, 0.24f, 0.30f, 0.90f);
-        handle.DrawLine(center - new Vector2(radius, 0), center + new Vector2(radius, 0), grid);
-        handle.DrawLine(center - new Vector2(0, radius), center + new Vector2(0, radius), grid);
+        // Draw grid lines
+        var grid = new Color(0.20f, 0.24f, 0.30f, 0.70f);
+        handle.DrawLine(center - new Vector2(radius - 15f, 0), center + new Vector2(radius - 15f, 0), grid);
+        handle.DrawLine(center - new Vector2(0, radius - 15f), center + new Vector2(0, radius - 15f), grid);
 
-        // Heading arrow
-        var rotMul = new Vector2(1, -1);
-        var rotOfs = new Angle(-MathF.PI / 2f);
+        // Draw diagonal grid lines for better visual
+        var diagOffset = (radius - 15f) * 0.707f;
+        handle.DrawLine(center - new Vector2(diagOffset, diagOffset), center + new Vector2(diagOffset, diagOffset), grid.WithAlpha(0.4f));
+        handle.DrawLine(center - new Vector2(diagOffset, -diagOffset), center + new Vector2(diagOffset, -diagOffset), grid.WithAlpha(0.4f));
+
+        // Draw FOV indicator (wider arc showing visible area)
         var heading = _eye.CurrentEye.Rotation;
 
-        var dir = (heading + rotOfs).ToVec() * rotMul;
-        var tip = center + dir * (radius - 10f);
-        var tail = center - dir * (radius * 0.25f);
+        // Draw direction indicators (N, S, E, W)
+        var directions = new (string Label, float Angle)[]
+        {
+            ("N", 0f),
+            ("E", MathF.PI / 2f),
+            ("S", MathF.PI),
+            ("W", 3f * MathF.PI / 2f)
+        };
+        
+        foreach (var (label, baseAngle) in directions)
+        {
+            var angle = baseAngle - (float)heading.Theta;
+            var pos = center + new Vector2(MathF.Cos(angle), MathF.Sin(angle)) * (radius - 12f);
+            var dirColor = label == "N" ? Color.FromHex("#FF4444") : new Color(0.7f, 0.8f, 0.9f, 0.8f);
+            handle.DrawString(_font, pos - new Vector2(4f, 5f), label, dirColor);
+        }
+
+        // Draw heading indicator (larger and more visible)
+        var tip = center + heading.ToVec() * (radius - 12f);
+        var tail = center - heading.ToVec() * (radius * 0.3f);
 
         handle.DrawLine(tail, tip, Color.Cyan);
 
-        var left = new Vector2(-dir.Y, dir.X);
-        var headSize = 10f;
-        handle.DrawLine(tip, tip - dir * headSize + left * (headSize * 0.6f), Color.Cyan);
-        handle.DrawLine(tip, tip - dir * headSize - left * (headSize * 0.6f), Color.Cyan);
+        var perp = new Vector2(-MathF.Sin((float)heading.Theta), MathF.Cos((float)heading.Theta));
+        var headSize = 12f;
+        handle.DrawLine(tip, tip - heading.ToVec() * headSize + perp * (headSize * 0.7f), Color.Cyan);
+        handle.DrawLine(tip, tip - heading.ToVec() * headSize - perp * (headSize * 0.7f), Color.Cyan);
 
-        // Draw self (dark blue dot in center)
-        handle.DrawCircle(center, 6f, SelfColor);
+        // Draw center self marker (larger)
+        handle.DrawCircle(center, 8f, SelfColor);
+        handle.DrawCircle(center, 5f, Color.Cyan);
 
-        // Draw coordinate target (green dot)
-        if (SanderSearchState.CoordsEnabled && SanderSearchState.CoordsValid)
-        {
-            var coordScreen = _eye.WorldToScreen(SanderSearchState.CoordsTarget);
-            var coordOffset = coordScreen - center;
-            var coordDist = coordOffset.Length();
-
-            Vector2 drawPos;
-            if (coordDist > radius - 25f)
-            {
-                drawPos = center + coordOffset.Normalized() * (radius - 25f);
-            }
-            else
-            {
-                drawPos = coordScreen;
-            }
-
-            handle.DrawCircle(drawPos, 5f, CoordinateColor);
-        }
-
-        // Get local player
         var localPlayer = _playerManager.LocalEntity;
         if (localPlayer == null) return;
 
@@ -132,9 +130,26 @@ public sealed class SanderCompassControl : Control
         var mapId = playerTransform.MapID;
         if (mapId == MapId.Nullspace) return;
 
-        // Only update when player moved 3+ units
+        if (SanderSearchState.CoordsEnabled && SanderSearchState.CoordsValid)
+        {
+            var coordOffsetWorld = SanderSearchState.CoordsTarget - playerPos;
+            var coordDist = coordOffsetWorld.Length();
+            if (coordDist > 0.001f)
+            {
+                var offsetAngle = MathF.Atan2(coordOffsetWorld.Y, coordOffsetWorld.X);
+                var relativeAngle = offsetAngle - (float)heading.Theta;
+                var dirVec = new Vector2(MathF.Cos(relativeAngle), MathF.Sin(relativeAngle));
+
+                var t = coordDist / CompassRange;
+                var markerRadius = MathF.Min(radius - 25f, t * (radius - 25f));
+
+                var drawPos = center + dirVec.Normalized() * markerRadius;
+                handle.DrawCircle(drawPos, 5f, CoordinateColor);
+            }
+        }
+
         var movedDistSq = (playerPos - _lastPlayerPos).LengthSquared();
-        bool playerMoved = movedDistSq > 9f;
+        bool playerMoved = movedDistSq > 4f;
 
         _frameCounter++;
         if (_frameCounter >= CacheInterval || _lastMapId != mapId || playerMoved || _needsFullUpdate)
@@ -146,37 +161,42 @@ public sealed class SanderCompassControl : Control
             UpdateCachedEntities(playerPos, mapId);
         }
 
-        // Draw entities
-        foreach (var (entity, cachedScreenPos, color, name, markerType) in _cachedEntities)
+        foreach (var (entity, cachedOffsetWorld, cachedDistance, color, name, markerType) in _cachedEntities)
         {
-            var offset = cachedScreenPos - center;
-            var distance = offset.Length();
-            Vector2 drawPos;
-            if (distance > radius - 25f)
-            {
-                offset = offset.Normalized() * (radius - 25f);
-                drawPos = center + offset;
-            }
-            else
-            {
-                drawPos = cachedScreenPos;
-            }
+            var offsetAngle = MathF.Atan2(cachedOffsetWorld.Y, cachedOffsetWorld.X);
+            var relativeAngle = offsetAngle - (float)heading.Theta;
+            var dirVec = new Vector2(MathF.Cos(relativeAngle), MathF.Sin(relativeAngle));
+
+            var t = cachedDistance / CompassRange;
+            var markerRadius = t * (radius - 30f);
+            markerRadius = MathF.Min(radius - 30f, MathF.Max(0f, markerRadius));
+
+            var drawPos = center + dirVec.Normalized() * markerRadius;
+
+            // Draw line from center to entity (with fade effect)
+            handle.DrawLine(center + dirVec.Normalized() * 15f, drawPos, color.WithAlpha(0.3f));
 
             if (markerType == CompassMarkerType.Item)
             {
-                // Yellow triangle for items
                 DrawTriangle(handle, drawPos, color);
             }
             else
             {
-                // Dot for players/NPCs
-                handle.DrawCircle(drawPos, 5f, color);
+                // Draw larger, more visible markers
+                var markerSize = cachedDistance < 15f ? 7f : 5f;
+                handle.DrawCircle(drawPos, markerSize, color);
             }
 
-            if (distance < radius - 35f && !string.IsNullOrEmpty(name))
+            // Show name and distance for entities within reasonable range
+            if (markerRadius < radius - 40f && !string.IsNullOrEmpty(name))
             {
-                var textPos = drawPos + new Vector2(8f, -4f);
+                var textPos = drawPos + new Vector2(10f, -4f);
                 handle.DrawString(_font, textPos, name, color);
+                
+                // Show distance
+                var distStr = $"{cachedDistance:F0}m";
+                var distPos = textPos + new Vector2(0f, 11f);
+                handle.DrawString(_font, distPos, distStr, color.WithAlpha(0.7f));
             }
         }
     }
@@ -268,8 +288,9 @@ public sealed class SanderCompassControl : Control
                     continue;
                 }
 
-                var screenPos = _eye.WorldToScreen(worldPos);
-                _cachedEntities.Add((entity, screenPos, color, name, markerType));
+                var offset = worldPos - playerPos;
+                var distance = MathF.Sqrt(distSq);
+                _cachedEntities.Add((entity, offset, distance, color, name, markerType));
             }
         }
         catch

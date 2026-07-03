@@ -16,3 +16,6 @@
 /home/melvinsgjr/sander/Sander/obj/Release/net9.0/refint/Sander.dll
 /home/melvinsgjr/sander/Sander/obj/Release/net9.0/Sander.pdb
 /home/melvinsgjr/sander/Sander/obj/Release/net9.0/ref/Sander.dll
+/home/melvinsgjr/sander/publish/build/Sander.deps.json
+/home/melvinsgjr/sander/publish/build/Sander.dll
+/home/melvinsgjr/sander/publish/build/Sander.pdb

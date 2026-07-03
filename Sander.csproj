@@ -4,10 +4,37 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <OutputPath>bin\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AssemblyName>Sander</AssemblyName>
+  </PropertyGroup>
+
+  <!-- Cross-platform configuration (default) -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <Optimize>true</Optimize>
+    <DebugType>none</DebugType>
+    <DefineConstants>$(DefineConstants);CROSSPLATFORM</DefineConstants>
+  </PropertyGroup>
+
+  <!-- Linux fallback configuration -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Linux'">
+    <Optimize>true</Optimize>
+    <DebugType>none</DebugType>
+    <AssemblyName>Sander_Linux_fallback</AssemblyName>
+    <DefineConstants>$(DefineConstants);LINUX_FALLBACK;CROSSPLATFORM</DefineConstants>
+  </PropertyGroup>
+
+  <!-- Windows fallback configuration -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Windows'">
+    <Optimize>true</Optimize>
+    <DebugType>none</DebugType>
+    <AssemblyName>Sander_Windows_fallback</AssemblyName>
+    <DefineConstants>$(DefineConstants);WINDOWS_FALLBACK;CROSSPLATFORM</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Lib.Harmony" Version="2.3.6" />
+    <PackageReference Include="Hexa.NET.ImGui" Version="2.2.10-prerelease" />
   </ItemGroup>
 
   <ItemGroup>

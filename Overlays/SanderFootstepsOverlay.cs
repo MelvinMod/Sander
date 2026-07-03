@@ -21,13 +21,26 @@ public sealed class SanderFootstepsOverlay : Overlay
 
     // Footstep trail - stores recent positions with timestamps
     private readonly List<FootstepTrail> _footsteps = new();
+    // Track last known positions to detect movement
+    private readonly Dictionary<EntityUid, Vector2> _lastPositions = new();
+    // Track last footstep position per entity to avoid too many footsteps
+    private readonly Dictionary<EntityUid, Vector2> _lastFootstepPositions = new();
     private int _frameCounter = 0;
-    private const int ScanInterval = 10; // Scan for mobs every 10 frames
+    private const int ScanInterval = 3; // Scan for mobs every 3 frames
+    
+    // Minimum distance between footsteps (to avoid lines/worms)
+    private const float MinStepDistance = 0.8f;
+    // Minimum distance to consider as movement (in world units)
+    private const float MinMoveDistance = 0.5f;
 
     // Trail settings
-    private const float TrailDuration = 4.0f; // How long footprints last
-    private const float MaxTrailDistance = 40f; // Max distance to track
-    private const int MaxFootsteps = 50; // Max footprints to draw
+    private const float TrailDuration = 2.5f; // How long footprints last
+    private const float MaxTrailDistance = 15f; // Max distance to track (reduced to avoid extreme range warnings)
+    private const int MaxFootsteps = 20; // Max footprints to draw
+
+    // Footstep appearance
+    private const float FootprintSize = 0.12f;
+    private const float FootOffset = 0.15f;
 
     public SanderFootstepsOverlay()
     {
@@ -35,7 +48,7 @@ public sealed class SanderFootstepsOverlay : Overlay
         ZIndex = 200;
     }
 
-    public override OverlaySpace Space => (OverlaySpace)2;
+    public override OverlaySpace Space => OverlaySpace.WorldSpace;
 
     protected override void Draw(in OverlayDrawArgs args)
     {
@@ -59,8 +72,8 @@ public sealed class SanderFootstepsOverlay : Overlay
             ScanForMobs();
         }
 
-        // Draw footsteps
-        DrawFootsteps(args.ScreenHandle);
+        // Draw footsteps using world handle
+        DrawFootsteps(args.WorldHandle);
     }
 
     private void ScanForMobs()
@@ -77,19 +90,18 @@ public sealed class SanderFootstepsOverlay : Overlay
         if (mapId == MapId.Nullspace)
             return;
 
-        var lookup = _entityManager.System<Robust.Shared.GameObjects.EntityLookupSystem>();
-        var worldViewport = _eyeManager.GetWorldViewport();
+        var lookup = _entityManager.System<EntityLookupSystem>();
         var rangeSq = MaxTrailDistance * MaxTrailDistance;
+
+        // Use a bounded box around the player instead of the full viewport to avoid extreme range warnings
+        var searchBox = new Box2(playerPos - new Vector2(MaxTrailDistance), playerPos + new Vector2(MaxTrailDistance));
 
         try
         {
-            foreach (var entity in lookup.GetEntitiesIntersecting(mapId, worldViewport))
+            foreach (var entity in lookup.GetEntitiesIntersecting(mapId, searchBox))
             {
-                if (entity == localPlayer)
-                    continue;
-
                 // Check if it's a mob (player or NPC)
-                if (!_entityManager.HasComponent<Content.Shared.Mobs.Components.MobStateComponent>(entity))
+                if (!_entityManager.HasComponent<MobStateComponent>(entity))
                     continue;
 
                 if (!_entityManager.TryGetComponent<TransformComponent>(entity, out var transform))
@@ -107,18 +119,49 @@ public sealed class SanderFootstepsOverlay : Overlay
                     name = meta.EntityName;
                 }
 
-                // Check if this is a player or NPC (simplified - just check if has mob state)
-                var isPlayer = _entityManager.HasComponent<MobStateComponent>(entity);
-
-                // Add footstep at current position
-                _footsteps.Add(new FootstepTrail
+                // Check if entity has moved enough to create a new footstep
+                bool shouldAddFootstep = false;
+                if (_lastPositions.TryGetValue(entity, out var lastPos))
                 {
-                    Entity = entity,
-                    WorldPosition = worldPos,
-                    Name = name,
-                    IsPlayer = isPlayer,
-                    Timestamp = DateTime.UtcNow
-                });
+                    var moveDist = (worldPos - lastPos).Length();
+                    if (moveDist >= MinMoveDistance)
+                    {
+                        // Check if we've moved enough from the last footstep position
+                        if (_lastFootstepPositions.TryGetValue(entity, out var lastFootstepPos))
+                        {
+                            var stepDist = (worldPos - lastFootstepPos).Length();
+                            shouldAddFootstep = stepDist >= MinStepDistance;
+                        }
+                        else
+                        {
+                            shouldAddFootstep = true;
+                        }
+                    }
+                }
+                else
+                {
+                    // First time seeing this entity
+                    shouldAddFootstep = true;
+                }
+
+                // Update last known position
+                _lastPositions[entity] = worldPos;
+
+                // Only add footstep if entity has moved enough
+                if (shouldAddFootstep)
+                {
+                    // Update last footstep position
+                    _lastFootstepPositions[entity] = worldPos;
+
+                    _footsteps.Add(new FootstepTrail
+                    {
+                        Entity = entity,
+                        WorldPosition = worldPos,
+                        Name = name,
+                        IsSelf = entity == localPlayer,
+                        Timestamp = DateTime.UtcNow
+                    });
+                }
 
                 // Limit total footsteps
                 while (_footsteps.Count > MaxFootsteps)
@@ -133,16 +176,9 @@ public sealed class SanderFootstepsOverlay : Overlay
         }
     }
 
-    private void DrawFootsteps(DrawingHandleScreen handle)
+    private void DrawFootsteps(DrawingHandleWorld worldHandle)
     {
         var currentTime = DateTime.UtcNow;
-        var localPlayer = _playerManager.LocalEntity;
-        Vector2? localPos = null;
-
-        if (localPlayer != null && _entityManager.TryGetComponent<TransformComponent>(localPlayer, out var localTransform))
-        {
-            localPos = localTransform.WorldPosition;
-        }
 
         foreach (var footstep in _footsteps)
         {
@@ -152,46 +188,30 @@ public sealed class SanderFootstepsOverlay : Overlay
             if (fadeRatio <= 0f)
                 continue;
 
-            var screenPos = _eyeManager.WorldToScreen(footstep.WorldPosition);
+            var worldPos = footstep.WorldPosition;
 
             // Color based on entity type
             Color color;
-            if (footstep.Entity == localPlayer)
+            if (footstep.IsSelf)
             {
-                color = new Color(0.2f, 0.4f, 1f, fadeRatio * 0.7f); // Blue for self
-            }
-            else if (footstep.IsPlayer)
-            {
-                color = new Color(0.2f, 0.8f, 0.2f, fadeRatio * 0.6f); // Green for players
+                color = new Color(0.2f, 0.4f, 1f, fadeRatio * 0.6f); // Blue for self
             }
             else
             {
-                color = new Color(1f, 0.5f, 0f, fadeRatio * 0.5f); // Orange for NPCs
+                color = new Color(0.2f, 0.8f, 0.2f, fadeRatio * 0.5f); // Green for others
             }
 
-            // Draw footprint icon (small oval/foot shape)
-            var size = 6f + (fadeRatio * 2f); // Slightly larger when fresh
-
-            // Draw left foot
-            var leftOffset = new Vector2(-3f, 0f);
-            handle.DrawCircle(screenPos + leftOffset, size * 0.6f, color);
-
-            // Draw right foot (slightly offset in time would be better, but simplified here)
-            var rightOffset = new Vector2(3f, 0f);
-            handle.DrawCircle(screenPos + rightOffset, size * 0.6f, color);
-
-            // Draw name label for nearby footsteps
-            if (localPos.HasValue)
-            {
-                var dist = (footstep.WorldPosition - localPos.Value).Length();
-                if (dist < 15f)
-                {
-                    var labelPos = screenPos - new Vector2(0f, 12f);
-                    // Simple color for text (white with fade)
-                    var textColor = new Color(1f, 1f, 1f, fadeRatio * 0.8f);
-                    // Note: We'd need a font to draw text, skipping for now
-                }
-            }
+            // Draw two small dots to represent left and right foot
+            // Alternate which foot is forward based on position
+            float sign = (worldPos.X * 10) % 2 > 1 ? 1f : -1f;
+            
+            // Left foot
+            var leftPos = worldPos + new Vector2(-FootOffset, sign * FootOffset * 0.5f);
+            worldHandle.DrawCircle(leftPos, FootprintSize * fadeRatio, color);
+            
+            // Right foot
+            var rightPos = worldPos + new Vector2(FootOffset, -sign * FootOffset * 0.5f);
+            worldHandle.DrawCircle(rightPos, FootprintSize * fadeRatio, color);
         }
     }
 
@@ -200,7 +220,7 @@ public sealed class SanderFootstepsOverlay : Overlay
         public EntityUid Entity;
         public Vector2 WorldPosition;
         public string Name = "";
-        public bool IsPlayer;
+        public bool IsSelf;
         public DateTime Timestamp;
     }
 }

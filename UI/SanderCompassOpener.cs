@@ -7,8 +7,6 @@ public static class SanderCompassOpener
     public static void Show()
     {
         _window ??= new SanderCompassWindow();
-        _window.Title = "Compass";
-        _window.OpenCentered();
     }
 }
 

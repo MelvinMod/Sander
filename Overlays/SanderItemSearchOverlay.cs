@@ -22,11 +22,16 @@ public sealed class SanderItemSearchOverlay : Overlay
     private EntityLookupSystem? _entityLookup;
 
     // Performance: cache found entities
-    private readonly List<(EntityUid Uid, Vector2 ScreenPos, string Name)> _cachedItems = new();
+    private readonly List<CachedItem> _cachedItems = new();
     private MapId _lastMapId = MapId.Nullspace;
     private int _frameCounter = 0;
     private const int CacheUpdateInterval = 15; // Update every 15 frames - much less lag
     private Vector2 _lastPlayerPos = Vector2.Zero;
+    
+    private const float MaxWorldDistance = 48f;
+    private const int MaxCacheItems = 180;
+    private const int MaxLineItems = 25;
+    private const int MaxNameItems = 25;
 
     public SanderItemSearchOverlay()
     {
@@ -66,30 +71,49 @@ public sealed class SanderItemSearchOverlay : Overlay
             _frameCounter = 0;
             _lastMapId = mapId;
             _lastPlayerPos = playerWorldPos;
-            UpdateCache(mapId, worldViewport);
+            UpdateCache(mapId, worldViewport, playerWorldPos);
         }
 
-        var localScreen = _eyeManager.WorldToScreen(playerWorldPos);
         var color = new Color(SanderSearchState.Color);
+        var maxDistSq = MaxWorldDistance * MaxWorldDistance;
+        var drawLines = 0;
+        var drawNames = 0;
 
         // Draw all cached items
-        foreach (var (uid, screenPos, name) in _cachedItems)
+        foreach (var item in _cachedItems)
         {
-            args.ScreenHandle.DrawLine(localScreen, screenPos, color);
+            if (item.DistanceSq > maxDistSq)
+                continue;
 
-            if (SanderSearchState.ShowNames)
-                args.ScreenHandle.DrawString(_font, screenPos - new Vector2(0f, 10f), name, color);
+            var screenPos = _eyeManager.WorldToScreen(item.WorldPos);
+
+            if (drawLines < MaxLineItems)
+            {
+                var localScreen = _eyeManager.WorldToScreen(playerWorldPos);
+                args.ScreenHandle.DrawLine(localScreen, screenPos, color);
+                drawLines++;
+            }
+
+            if (SanderSearchState.ShowNames && drawNames < MaxNameItems)
+            {
+                args.ScreenHandle.DrawString(_font, screenPos - new Vector2(0f, 10f), item.Name, color);
+                drawNames++;
+            }
+
+            if (drawLines >= MaxLineItems && (!SanderSearchState.ShowNames || drawNames >= MaxNameItems))
+                break;
         }
     }
 
-    private void UpdateCache(MapId mapId, Box2 worldViewport)
+    private void UpdateCache(MapId mapId, Box2 worldViewport, Vector2 playerWorldPos)
     {
         _cachedItems.Clear();
 
         if (mapId == MapId.Nullspace)
             return;
 
-        var queryLower = SanderSearchState.Query.ToLowerInvariant();
+        var query = SanderSearchState.Query;
+        var maxDistSq = MaxWorldDistance * MaxWorldDistance;
 
         try
         {
@@ -101,17 +125,28 @@ public sealed class SanderItemSearchOverlay : Overlay
                     continue;
 
                 var name = meta.EntityName;
-                if (!name.Contains(queryLower, StringComparison.OrdinalIgnoreCase))
+                if (!name.Contains(query, StringComparison.OrdinalIgnoreCase))
                     continue;
 
-                var screenPos = _eyeManager.WorldToScreen(xform.WorldPosition);
-                _cachedItems.Add((uid, screenPos, name));
+                var worldPos = xform.WorldPosition;
+                var distSq = (worldPos - playerWorldPos).LengthSquared();
+                if (distSq > maxDistSq)
+                    continue;
+
+                _cachedItems.Add(new CachedItem(uid, worldPos, name, distSq));
             }
+
+            _cachedItems.Sort(static (a, b) => a.DistanceSq.CompareTo(b.DistanceSq));
+
+            if (_cachedItems.Count > MaxCacheItems)
+                _cachedItems.RemoveRange(MaxCacheItems, _cachedItems.Count - MaxCacheItems);
         }
         catch
         {
             // Ignore lookup errors
         }
     }
+
+    private readonly record struct CachedItem(EntityUid Uid, Vector2 WorldPos, string Name, float DistanceSq);
 }
 

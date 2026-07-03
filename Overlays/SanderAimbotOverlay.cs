@@ -25,7 +25,7 @@ public sealed class SanderAimbotOverlay : Overlay
     private Vector2 _mouseWorldPos;
     private bool _isReady = false;
 
-    private const float AimbotRadius = 3f;
+    private float AimbotRadius => SanderSearchState.AimbotRadius;
 
     public SanderAimbotOverlay()
     {
@@ -33,7 +33,7 @@ public sealed class SanderAimbotOverlay : Overlay
         ZIndex = 300;
     }
 
-    public override OverlaySpace Space => (OverlaySpace)2;
+    public override OverlaySpace Space => OverlaySpace.WorldSpace;
 
     protected override void FrameUpdate(FrameEventArgs args)
     {
@@ -44,10 +44,9 @@ public sealed class SanderAimbotOverlay : Overlay
             return;
         }
 
-        // Get mouse position in world
         var mouseScreenPos = _inputManager.MouseScreenPosition;
         var mouseMapCoords = _eyeManager.PixelToMap(mouseScreenPos);
-        
+
         if (mouseMapCoords.MapId == MapId.Nullspace)
         {
             _currentTarget = null;
@@ -66,8 +65,6 @@ public sealed class SanderAimbotOverlay : Overlay
         }
 
         _isReady = true;
-
-        // Find target
         _currentTarget = FindTarget(localPlayer.Value, _mouseWorldPos);
     }
 
@@ -80,8 +77,8 @@ public sealed class SanderAimbotOverlay : Overlay
         if (mapId == MapId.Nullspace)
             return null;
 
-        var lookup = _entityManager.System<Robust.Shared.GameObjects.EntityLookupSystem>();
-        
+        var lookup = _entityManager.System<EntityLookupSystem>();
+
         EntityUid? closestTarget = null;
         float closestDist = AimbotRadius * AimbotRadius;
 
@@ -93,11 +90,12 @@ public sealed class SanderAimbotOverlay : Overlay
                 if (entity == player)
                     continue;
 
-                // Check if it's a valid target (mob, alive)
+                if (_entityManager.HasComponent<Sander.Components.SanderFriendComponent>(entity))
+                    continue;
+
                 if (!_entityManager.TryGetComponent<MobStateComponent>(entity, out var mobState))
                     continue;
 
-                // Only target critters and humans (not dead)
                 if (mobState.CurrentState == MobState.Dead)
                     continue;
 
@@ -124,26 +122,36 @@ public sealed class SanderAimbotOverlay : Overlay
 
     protected override void Draw(in OverlayDrawArgs args)
     {
-        if (!_isReady || _currentTarget == null)
+        if (!_isReady)
             return;
 
-        if (!_entityManager.TryGetComponent<TransformComponent>(_currentTarget.Value, out var targetTransform))
-            return;
+        var worldHandle = args.WorldHandle;
+        var color = SanderSearchState.GunAimbotEnabled ? Color.White : new Color(1f, 0.5f, 0f);
 
-        var targetPos = targetTransform.WorldPosition;
-        var color = SanderSearchState.GunAimbotEnabled ? Color.Red : new Color(1f, 0.5f, 0f);
+        // Draw the aimbot circle at mouse position (like ArabicaCliento)
+        worldHandle.DrawCircle(_mouseWorldPos, AimbotRadius, color, false);
 
-        // Draw target circle
-        args.WorldHandle.DrawCircle(targetPos, 0.3f, color.WithAlpha(0.8f), false);
-
-        // Draw line to target
-        if (_entityManager.TryGetComponent<TransformComponent>(_playerManager.LocalEntity, out var playerTransform))
+        // If we have a target, draw additional indicators
+        if (_currentTarget != null)
         {
-            var playerPos = playerTransform.WorldPosition;
-            args.WorldHandle.DrawLine(playerPos, targetPos, color.WithAlpha(0.5f));
-        }
+            if (_entityManager.TryGetComponent<TransformComponent>(_currentTarget.Value, out var targetTransform))
+            {
+                var targetPos = targetTransform.WorldPosition;
 
-        // Draw aim circle around mouse
-        args.WorldHandle.DrawCircle(_mouseWorldPos, AimbotRadius, color.WithAlpha(0.3f), false);
+                // Draw circle on target
+                worldHandle.DrawCircle(targetPos, 0.4f, Color.Red, false);
+
+                // Draw X on target (hitmarker)
+                float xSize = 0.3f;
+                worldHandle.DrawLine(
+                    targetPos + new Vector2(-xSize, -xSize),
+                    targetPos + new Vector2(xSize, xSize),
+                    Color.Red);
+                worldHandle.DrawLine(
+                    targetPos + new Vector2(xSize, -xSize),
+                    targetPos + new Vector2(-xSize, xSize),
+                    Color.Red);
+            }
+        }
     }
 }
