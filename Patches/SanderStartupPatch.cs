@@ -5,8 +5,13 @@ using Robust.Client.UserInterface.Controls;
 using Robust.Client.UserInterface;
 using Robust.Shared.Maths;
 using Robust.Shared.IoC;
+using Robust.Shared.Configuration;
+using Robust.Shared.Log;
+using Robust.Shared.GameObjects;
 using Sander.Overlays;
 using Sander.UI;
+using Sander.Systems;
+using Sander.Patches;
 
 namespace Sander.Patches;
 
@@ -19,41 +24,101 @@ public static class SanderStartupPatch
     private static SanderCoordinateOverlay? _coordsOverlay;
     private static SanderSyndicatePirateOverlay? _syndPirateOverlay;
     private static SanderSearchBar? _searchBar;
+    private static SanderPacketDebugOverlay? _packetDebugOverlay;
+    private static SanderSocialButtons? _socialButtons;
 
     public static void Postfix()
     {
-        if (_initialized)
-            return;
-
-        var overlays = IoCManager.Resolve<IOverlayManager>();
-        var ui = IoCManager.Resolve<IUserInterfaceManager>();
-
-        _searchOverlay = new SanderItemSearchOverlay();
-        overlays.AddOverlay(_searchOverlay);
-
-        _implantOverlay = new SanderImplantOverlay();
-        overlays.AddOverlay(_implantOverlay);
-
-        _coordsOverlay = new SanderCoordinateOverlay();
-        overlays.AddOverlay(_coordsOverlay);
-
-        _syndPirateOverlay = new SanderSyndicatePirateOverlay();
-        overlays.AddOverlay(_syndPirateOverlay);
-
-        // Top screen search bar UI
-        _searchBar = new SanderSearchBar
+        try
         {
-            HorizontalAlignment = Control.HAlignment.Center,
-            VerticalAlignment = Control.VAlignment.Top,
-            Margin = new Thickness(0, 8, 0, 0)
-        };
+            if (_initialized)
+                return;
 
-        // StateRoot is for state-specific screens (lobby, menus). RootControl persists in gameplay.
-        // Avoid duplicate attach if something already added it.
-        if (_searchBar.Parent == null)
-            ui.RootControl.AddChild(_searchBar);
+            // Initialize Packet Fixer
+            PacketFixerInitializer.Initialize();
 
-        _initialized = true;
+            // Initialize FPS Booster - automatically enabled
+            try
+            {
+                FPSBooster.Initialize();
+            }
+            catch
+            {
+                // Ignore if fails
+            }
+
+            // Initialize Graphics Settings
+            try
+            {
+                Sander.UI.SanderGraphicsSettings.Initialize();
+            }
+            catch
+            {
+                // Ignore if fails
+            }
+
+            var overlays = IoCManager.Resolve<IOverlayManager>();
+            var ui = IoCManager.Resolve<IUserInterfaceManager>();
+
+            _searchOverlay = new SanderItemSearchOverlay();
+            overlays.AddOverlay(_searchOverlay);
+
+            _implantOverlay = new SanderImplantOverlay();
+            overlays.AddOverlay(_implantOverlay);
+
+            _coordsOverlay = new SanderCoordinateOverlay();
+            overlays.AddOverlay(_coordsOverlay);
+
+            _syndPirateOverlay = new SanderSyndicatePirateOverlay();
+            overlays.AddOverlay(_syndPirateOverlay);
+
+            // Packet Fixer - Always active with debug overlay
+            _packetDebugOverlay = new SanderPacketDebugOverlay();
+            overlays.AddOverlay(_packetDebugOverlay);
+
+            // Initialize packet fixer system
+            try
+            {
+                SanderClientPacketExtender.Initialize();
+            }
+            catch
+            {
+                // Ignore errors during initialization
+            }
+
+            // Top screen search bar UI
+            _searchBar = new SanderSearchBar();
+
+            // Try to get systems for the search bar (optional)
+            try
+            {
+                var entManager = IoCManager.Resolve<IEntityManager>();
+                var cameraSystem = entManager.System<SanderCameraSystem>();
+                var ghostSystem = entManager.System<SanderGhostSystem>();
+                _searchBar.SetSystems(cameraSystem, ghostSystem);
+            }
+            catch
+            {
+                // Systems might not be available yet, that's okay
+            }
+
+            // StateRoot is for state-specific screens (lobby, menus). RootControl persists in gameplay.
+            // Avoid duplicate attach if something already added it.
+            if (_searchBar.Parent == null)
+                ui.RootControl.AddChild(_searchBar);
+
+            // Social media buttons (Matrix + Telegram) - bottom-right corner
+            _socialButtons = new SanderSocialButtons();
+            if (_socialButtons.Parent == null)
+                ui.RootControl.AddChild(_socialButtons);
+
+            _initialized = true;
+        }
+        catch (Exception ex)
+        {
+            Logger.Error($"[Sander] Startup failed: {ex.Message}\n{ex.StackTrace}");
+        }
     }
+
 }
 

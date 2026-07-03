@@ -1,0 +1,16 @@
+/home/melvinsgjr/sander/Sander/bin/Content.Client.dll
+/home/melvinsgjr/sander/Sander/bin/Content.Shared.dll
+/home/melvinsgjr/sander/Sander/bin/Robust.Client.dll
+/home/melvinsgjr/sander/Sander/bin/Robust.Shared.dll
+/home/melvinsgjr/sander/Sander/bin/Robust.Shared.Maths.dll
+/home/melvinsgjr/sander/Sander/obj/Release/Sander.csproj.AssemblyReference.cache
+/home/melvinsgjr/sander/Sander/obj/Release/Sander.GeneratedMSBuildEditorConfig.editorconfig
+/home/melvinsgjr/sander/Sander/obj/Release/Sander.AssemblyInfoInputs.cache
+/home/melvinsgjr/sander/Sander/obj/Release/Sander.AssemblyInfo.cs
+/home/melvinsgjr/sander/Sander/obj/Release/Sander.csproj.CoreCompileInputs.cache
+/home/melvinsgjr/sander/Sander/obj/Release/Sander.csproj.Up2Date
+/home/melvinsgjr/sander/Sander/bin/Sander.deps.json
+/home/melvinsgjr/sander/Sander/bin/Sander.dll
+/home/melvinsgjr/sander/Sander/obj/Release/Sander.dll
+/home/melvinsgjr/sander/Sander/obj/Release/refint/Sander.dll
+/home/melvinsgjr/sander/Sander/obj/Release/ref/Sander.dll

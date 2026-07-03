@@ -1,3 +1,4 @@
+using System;
 using System.Numerics;
 using Robust.Client.GameObjects;
 using Robust.Client.Graphics;
@@ -15,7 +16,10 @@ public sealed class SanderCameraSystem : EntitySystem
     [Dependency] private readonly ILightManager _lightManager = default!;
 
     private int _updateCounter = 0;
-    private const int UpdateInterval = 15;
+    private const int UpdateInterval = 2;
+    private const float DefaultZoom = 1.0f;
+    private float _currentZoom = DefaultZoom;
+    private float _targetZoom = DefaultZoom;
 
     public override void Update(float frameTime)
     {
@@ -29,20 +33,44 @@ public sealed class SanderCameraSystem : EntitySystem
         if (localEntity == null)
             return;
 
+        HandleZoom(frameTime);
+
         if (!_entityManager.TryGetComponent<EyeComponent>(localEntity, out var eyeComponent))
             return;
 
         ApplyVisualSettings(eyeComponent);
     }
 
+    private void HandleZoom(float frameTime)
+    {
+        // FOV Extender takes priority (smaller, more comfortable FOV)
+        if (SanderSearchState.FovExtenderEnabled && SanderSearchState.FovExtenderValue > 1.0f)
+        {
+            _targetZoom = SanderSearchState.FovExtenderValue;
+        }
+        // Extra FOV (bigger FOV)
+        else if (SanderSearchState.FovEnabled && SanderSearchState.FovValue > 1.0f)
+        {
+            _targetZoom = SanderSearchState.FovValue;
+        }
+        else
+        {
+            _targetZoom = DefaultZoom;
+        }
+
+        if (Math.Abs(_currentZoom - _targetZoom) > 0.001f)
+        {
+            _currentZoom = _currentZoom + (_targetZoom - _currentZoom) * Math.Min(frameTime * 5f, 1f);
+        }
+    }
+
     private void ApplyVisualSettings(EyeComponent eyeComponent)
     {
-        // Fullbright - completely disable lighting
         if (SanderSearchState.FullbrightEnabled)
         {
             _lightManager.Enabled = false;
             _lightManager.DrawLighting = false;
-            
+
             if (eyeComponent.Eye != null)
             {
                 eyeComponent.Eye.DrawLight = false;
@@ -52,28 +80,19 @@ public sealed class SanderCameraSystem : EntitySystem
         {
             _lightManager.Enabled = true;
             _lightManager.DrawLighting = true;
-            
+
             if (eyeComponent.Eye != null)
             {
                 eyeComponent.Eye.DrawLight = true;
             }
         }
 
-        // Shadows - toggle shadow rendering
         _lightManager.DrawShadows = SanderSearchState.ShadowsEnabled;
 
-        // FOV - toggle field of view using zoom
+        // Use eyeComponent.Eye.Zoom like ArabicaCliento does
         if (eyeComponent.Eye != null)
         {
-            if (SanderSearchState.FovEnabled)
-            {
-                var zoomFactor = 1f / SanderSearchState.FovValue;
-                eyeComponent.Eye.Zoom = new Vector2(zoomFactor, zoomFactor);
-            }
-            else
-            {
-                eyeComponent.Eye.Zoom = new Vector2(1f / 1.2f, 1f / 1.2f);
-            }
+            eyeComponent.Eye.Zoom = new Vector2(_currentZoom, _currentZoom);
         }
     }
 

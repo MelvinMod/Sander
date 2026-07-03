@@ -1,0 +1,192 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v9.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v9.0": {
+      "Sander/1.0.0": {
+        "dependencies": {
+          "Hexa.NET.ImGui": "2.2.10-prerelease",
+          "Lib.Harmony": "2.3.6",
+          "Content.Client": "1.0.0.0",
+          "Content.Shared": "1.0.0.0",
+          "Robust.Client": "268.0.0.0",
+          "Robust.Shared": "268.0.0.0",
+          "Robust.Shared.Maths": "268.0.0.0"
+        },
+        "runtime": {
+          "Sander.dll": {}
+        }
+      },
+      "Hexa.NET.ImGui/2.2.10-prerelease": {
+        "dependencies": {
+          "HexaGen.Runtime": "1.1.21"
+        },
+        "runtime": {
+          "lib/net9.0/Hexa.NET.ImGui.dll": {
+            "assemblyVersion": "1.92.1.0",
+            "fileVersion": "1.92.1.0"
+          }
+        },
+        "runtimeTargets": {
+          "runtimes/android-arm64/native/cimgui.so": {
+            "rid": "android-arm64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/android-x64/native/cimgui.so": {
+            "rid": "android-x64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/linux-arm64/native/cimgui.so": {
+            "rid": "linux-arm64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/linux-x64/native/cimgui.so": {
+            "rid": "linux-x64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/osx-arm64/native/cimgui.dylib": {
+            "rid": "osx-arm64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/osx-x64/native/cimgui.dylib": {
+            "rid": "osx-x64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/win-arm64/native/cimgui.dll": {
+            "rid": "win-arm64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/win-x64/native/cimgui.dll": {
+            "rid": "win-x64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/win-x86/native/cimgui.dll": {
+            "rid": "win-x86",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          }
+        }
+      },
+      "HexaGen.Runtime/1.1.21": {
+        "runtime": {
+          "lib/net9.0/HexaGen.Runtime.dll": {
+            "assemblyVersion": "1.1.0.0",
+            "fileVersion": "1.1.0.0"
+          }
+        }
+      },
+      "Lib.Harmony/2.3.6": {
+        "runtime": {
+          "lib/net9.0/0Harmony.dll": {
+            "assemblyVersion": "2.3.6.0",
+            "fileVersion": "2.3.6.0"
+          }
+        }
+      },
+      "Content.Client/1.0.0.0": {
+        "runtime": {
+          "Content.Client.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "Content.Shared/1.0.0.0": {
+        "runtime": {
+          "Content.Shared.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "Robust.Client/268.0.0.0": {
+        "runtime": {
+          "Robust.Client.dll": {
+            "assemblyVersion": "268.0.0.0",
+            "fileVersion": "268.0.0.0"
+          }
+        }
+      },
+      "Robust.Shared/268.0.0.0": {
+        "runtime": {
+          "Robust.Shared.dll": {
+            "assemblyVersion": "268.0.0.0",
+            "fileVersion": "268.0.0.0"
+          }
+        }
+      },
+      "Robust.Shared.Maths/268.0.0.0": {
+        "runtime": {
+          "Robust.Shared.Maths.dll": {
+            "assemblyVersion": "268.0.0.0",
+            "fileVersion": "268.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Sander/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Hexa.NET.ImGui/2.2.10-prerelease": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Gdgm1Uxe5TTM9D1auyNzOVNol/FFkb5XgP/oFT7EctM8jnFbdMc9hRdt6Mo2nbQQfPzu4JjAvkJ89Ff/mswkUg==",
+      "path": "hexa.net.imgui/2.2.10-prerelease",
+      "hashPath": "hexa.net.imgui.2.2.10-prerelease.nupkg.sha512"
+    },
+    "HexaGen.Runtime/1.1.21": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-fxSBIroVyuU1CQUSKsE3IZNOW8FlI58zuU1kIG5ZvDH0jtQq5yTPEvPMoNyMB5PrhzYH/taTMqd85VtxcZPD8g==",
+      "path": "hexagen.runtime/1.1.21",
+      "hashPath": "hexagen.runtime.1.1.21.nupkg.sha512"
+    },
+    "Lib.Harmony/2.3.6": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-HqXPz33Z+R8ZDCLS5pJZthg33AMdF1bQXUbz2V7Neb9E+sMQOf4S1wquhM4pLIZFX7BZcOQubclbVreiM1+qmw==",
+      "path": "lib.harmony/2.3.6",
+      "hashPath": "lib.harmony.2.3.6.nupkg.sha512"
+    },
+    "Content.Client/1.0.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Content.Shared/1.0.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Robust.Client/268.0.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Robust.Shared/268.0.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Robust.Shared.Maths/268.0.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
